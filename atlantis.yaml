@@ -5,7 +5,6 @@ projects:
     dir: "infra-local"
     workflow: "custom"
     terraform_version: "1.5.0"
-    docker_image: "ghcr.io/runatlantis/atlantis:latest"  # This image includes git
 
 workflows:
   custom:
