@@ -2,13 +2,17 @@ version: 3
 
 projects:
   - name: "infra"
-    dir: "infra-local"  # <-- Set this to your actual Terraform folder
+    dir: "infra-local"
     workflow: "custom"
+    terraform_version: "1.5.0"
+    docker_image: "ghcr.io/runatlantis/atlantis:latest"  # This image includes git
 
 workflows:
   custom:
     plan:
       steps:
+        - run: echo "Starting custom workflow"
+        - run: git --version
         - init
         - plan
     apply:
