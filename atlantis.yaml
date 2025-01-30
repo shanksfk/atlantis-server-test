@@ -1,0 +1,16 @@
+version: 3
+
+projects:
+  - name: "infra"
+    dir: "infra-local"  # <-- Set this to your actual Terraform folder
+    workflow: "custom"
+
+workflows:
+  custom:
+    plan:
+      steps:
+        - init
+        - plan
+    apply:
+      steps:
+        - apply
