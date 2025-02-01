@@ -4,8 +4,6 @@ projects:
   - name: "infra"
     dir: "infra-local"
     workflow: "custom"
-    terraform_version: "1.5.0"
-
 workflows:
   custom:
     plan:
