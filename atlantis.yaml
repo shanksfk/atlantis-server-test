@@ -21,7 +21,9 @@ workflows:
             export PATH=/home/atlantis/bin:$PATH
         - run: |
             echo "Downloading and installing jq..."
-            apt-get update && apt-get install -y jq
+            curl -sSL https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -o /home/atlantis/bin/jq
+            chmod +x /home/atlantis/bin/jq
+            export PATH=/home/atlantis/bin:$PATH
         - init
         - plan:
             extra_args: ["-out", "tfplan.binary"]
