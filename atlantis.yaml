@@ -12,8 +12,29 @@ workflows:
       steps:
         - run: echo "Starting custom workflow"
         - run: git --version
+        - run: |
+            echo "Downloading and installing OPA..."
+            curl -L -o opa https://openpolicyagent.org/downloads/v0.45.0/opa_linux_amd64
+            chmod +x opa
+            mv opa /usr/local/bin/
+        - run: |
+            echo "Downloading and installing jq..."
+            apt-get update && apt-get install -y jq
         - init
-        - plan
+        - plan:
+            extra_args: ["-out", "tfplan.binary"]
+        - run: terraform show -json tfplan.binary > tfplan.json
+        - run: |
+            echo "Running OPA policy checks..."
+            OPA_RESULT=$(opa eval --format json --data infra-local/policy.rego --input tfplan.json "data.terraform.analysis.violations")
+            echo "$OPA_RESULT" > opa_results.json
+        - run: |
+            echo "Generating markdown report..."
+            echo -e "### OPA Policy Check Results\n\n| No | Violation Types | Description |\n|----|-----------------|-------------|" > opa_results.md
+            jq -r '.result[].expressions[].value | to_entries | .[] | "| \(.key + 1) | \(.value.msg | split(":")[0]) | \(.value.msg) |"' opa_results.json >> opa_results.md
+        - run: |
+            echo "Posting results to PR..."
+            atlantis comment --file opa_results.md
     apply:
       steps:
         - apply
