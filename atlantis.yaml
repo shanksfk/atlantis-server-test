@@ -19,6 +19,17 @@ workflows:
             mv opa /home/atlantis/bin/opa
             export PATH=/home/atlantis/bin:$PATH
         - run: |
+            echo "Downloading and installing Python 3..."
+            PYTHON_VERSION="3.9.13"  # Specify the Python version you want
+            curl -L -o python.tar.xz https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tar.xz
+            mkdir -p /home/atlantis/python
+            tar -xf python.tar.xz -C /home/atlantis/python --strip-components=1
+            cd /home/atlantis/python
+            ./configure --prefix=/home/atlantis/bin/python --enable-optimizations
+            make -j$(nproc)
+            make install
+            export PATH=/home/atlantis/bin/python/bin:$PATH
+        - run: |
             echo "Running OPA policy checks..."
             OPA_RESULT=$(opa eval --format json --data infra-local/policy.rego --input tfplan.json "data.terraform.analysis.violations")
             echo "$OPA_RESULT" > opa_results.json
