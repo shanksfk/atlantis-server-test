@@ -16,7 +16,9 @@ workflows:
             echo "Downloading and installing OPA..."
             curl -L -o opa https://openpolicyagent.org/downloads/v0.45.0/opa_linux_amd64
             chmod +x opa
-            mv opa /usr/local/bin/
+            mkdir -p /home/atlantis/bin
+            mv opa /home/atlantis/bin/opa
+            export PATH=/home/atlantis/bin:$PATH
         - run: |
             echo "Downloading and installing jq..."
             apt-get update && apt-get install -y jq
