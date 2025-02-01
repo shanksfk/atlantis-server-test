@@ -24,10 +24,26 @@ workflows:
             echo "$OPA_RESULT" > opa_results.json
         - run: |
             echo "Displaying OPA results in table format..."
-            echo -e "No | Violation Types | Description"
-            echo -e "---|-----------------|-------------"
-            # Use jq to parse the OPA results and display them in table format
-            jq -r '.result[].expressions[].value | to_entries | .[] | "\(.key + 1) | \(.value.msg | split(":")[0]) | \(.value.msg)"' opa_results.json
+            python3 - <<EOF
+            import json
+
+            # Load the OPA results from the JSON file
+            with open("opa_results.json", "r") as file:
+                opa_results = json.load(file)
+
+            # Extract the violations
+            violations = opa_results["result"][0]["expressions"][0]["value"]
+
+            # Print the table header
+            print("No | Violation Types | Description")
+            print("---|-----------------|-------------")
+
+            # Print each violation in table format
+            for i, violation in enumerate(violations, start=1):
+                violation_type = violation["msg"].split(":")[0]
+                description = violation["msg"]
+                print(f"{i} | {violation_type} | {description}")
+            EOF
         - run: |
             echo "Posting results to PR..."
             atlantis comment --file opa_results.md
