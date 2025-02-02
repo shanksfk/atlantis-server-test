@@ -22,12 +22,16 @@ workflows:
             echo "Running OPA policy checks..."
             OPA_RESULT=$(opa eval --format json --data infra-local/policy.rego --input tfplan.json "data.terraform.analysis.violations")
             echo "$OPA_RESULT" > opa_results.json
-        - run: |
-            echo "Displaying OPA results in table format..."
-            echo -e "No | Violation Types | Description"
-            echo -e "---|-----------------|-------------"
-            # Use jq to parse the OPA results and display them in table format
-            jq -r '.result[].expressions[].value | to_entries | .[] | "\(.key + 1) | \(.value.msg | split(":")[0]) | \(.value.msg)"' opa_results.json
+        
+            echo "Formatting OPA results into a Markdown table..."
+            OPA_TABLE=$(jq -r '
+              .result[].expressions[].value
+              | to_entries
+              | map("| \(.key + 1) | \(.value.violation_type) | \(.value.description) |")
+              | join("\n")
+            ' opa_results.json)
+        
+            echo -e "## OPA Policy Check Results\n\n$OPA_TABLE" > opa_summary.md
 
     apply:
       steps:
