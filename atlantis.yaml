@@ -13,11 +13,11 @@ workflows:
         - run: git --version
         - run: |
             echo "Initializing Terraform..."
-            terraform init infra-local
+            cd infra-local && terraform init
         - run: |
             echo "Generating Terraform plan in JSON format..."
-            terraform plan -out=tfplan.binary infra-local
-            terraform show -json tfplan.binary > tfplan.json
+            cd infra-local && terraform plan -out=tfplan.binary
+            cd infra-local && terraform show -json tfplan.binary > tfplan.json
         - run: |
             echo "Running OPA policy checks..."
             OPA_RESULT=$(opa eval --format json --data infra-local/policy.rego --input tfplan.json "data.terraform.analysis.violations")
