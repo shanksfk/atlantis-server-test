@@ -21,9 +21,24 @@ workflows:
             echo "Generating Terraform plan in JSON format..."
             terraform plan -out=tfplan.binary
             terraform show -json tfplan.binary > tfplan.json
+workflows:
+  custom:
+    plan:
+      steps:
+        - run: echo "Starting custom workflow"
+        - run: git --version
+        - run: |
+            echo "Initializing Terraform..."
+            terraform init
+        - run: |
+            echo "Cleaning up previous plan files..."
+            rm -f tfplan.binary tfplan.json
+        - run: |
+            echo "Generating Terraform plan in JSON format..."
+            terraform plan -out=tfplan.binary
+            terraform show -json tfplan.binary > tfplan.json
         - run: |
             echo "Running OPA policy checks..."
-            echo "## 🚀 OPA Policy Check Results"
         
             # Run OPA and save output
             opa eval --format json --data infra-local/policy.rego --input tfplan.json "data.terraform.analysis.violations" > opa_output.json
@@ -31,24 +46,35 @@ workflows:
             echo "DEBUG: OPA Output Structure:"
             cat opa_output.json | jq .
         
+            # Prepare OPA result as a comment file
+            echo "### 🚀 OPA Policy Check Results" > opa_comment.txt
+            echo "---" >> opa_comment.txt
+
             # Check if there are any violations
             if jq -e '.result[0].expressions[0].value | length > 0' opa_output.json >/dev/null 2>&1; then
-              echo '```markdown'  # Start a code block for better formatting
-              echo "| 🚨 **Violation #** | 🔍 **Issue Description** |"
-              echo "|------------------|--------------------------|"
+              echo "### ⚠️ **OPA Policy Violations Detected!**" >> opa_comment.txt
+              echo "The following policy violations were found in your Terraform plan:" >> opa_comment.txt
+              echo '```markdown' >> opa_comment.txt
+              echo "| 🚨 **Violation #** | 🔍 **Issue Description** |" >> opa_comment.txt
+              echo "|------------------|--------------------------|" >> opa_comment.txt
         
               # Extract and format violations properly
-              jq -r '.result[0].expressions[0].value[]' opa_output.json | awk '{print "| "NR" | "$0" |"}'
+              jq -r '.result[0].expressions[0].value[]' opa_output.json | awk '{print "| "NR" | "$0" |"}' >> opa_comment.txt
         
-              echo '```'  # End the code block
+              echo '```' >> opa_comment.txt
+              echo "---" >> opa_comment.txt
+              echo "🔴 **Fix the above violations before applying the Terraform plan.**" >> opa_comment.txt
             else
-              echo '```markdown'
-              echo "| ✅ No violations found! 🎉 |"
-              echo '```'
+              echo "### ✅ No OPA Policy Violations Found 🎉" >> opa_comment.txt
+              echo "---" >> opa_comment.txt
             fi
         
             # Cleanup
             rm -f opa_output.json
+        - run: |
+            # Post OPA results as a separate PR comment using Atlantis notify
+            atlantis notify --text "$(cat opa_comment.txt)"
+            rm -f opa_comment.txt
     apply:
       steps:
         - run: |
