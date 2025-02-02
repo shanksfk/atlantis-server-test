@@ -21,22 +21,6 @@ workflows:
             echo "Generating Terraform plan in JSON format..."
             terraform plan -out=tfplan.binary
             terraform show -json tfplan.binary > tfplan.json
-workflows:
-  custom:
-    plan:
-      steps:
-        - run: echo "Starting custom workflow"
-        - run: git --version
-        - run: |
-            echo "Initializing Terraform..."
-            terraform init
-        - run: |
-            echo "Cleaning up previous plan files..."
-            rm -f tfplan.binary tfplan.json
-        - run: |
-            echo "Generating Terraform plan in JSON format..."
-            terraform plan -out=tfplan.binary
-            terraform show -json tfplan.binary > tfplan.json
         - run: |
             # Force Atlantis to close <details> by adding a blank line
             echo ""  
