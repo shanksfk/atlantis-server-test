@@ -42,9 +42,11 @@ workflows:
             else
               echo "| ✅ | No violations found! |"
             fi
-
+            
             # Cleanup
             rm -f opa_output.json
+        
+            comment: "Review the proposed infrastructure changes for environment: {{ .EnvName }}. Please comment with any concerns."
 
     apply:
       steps:
