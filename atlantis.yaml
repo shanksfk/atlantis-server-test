@@ -22,9 +22,8 @@ workflows:
             echo "Running OPA policy checks..."
             OPA_RESULT=$(opa eval --format json --data infra-local/policy.rego --input tfplan.json "data.terraform.analysis.violations")
             echo "$OPA_RESULT" > opa_results.json
-        
             echo "Formatting OPA results into a Markdown table..."
-            if [[ -s opa_results.json ]]; then
+            if [ -s opa_results.json ]; then
               OPA_TABLE=$(jq -r '
                 .result[]?.expressions[]?.value
                 | select(. != null)
@@ -35,11 +34,11 @@ workflows:
             else
               OPA_TABLE="No violations found."
             fi
-        
-            echo -e "## OPA Policy Check Results\n\n$OPA_TABLE" > opa_summary.md
-        
-            echo "Posting OPA results as a PR comment..."
 
+            echo -e "## OPA Policy Check Results\n\n$OPA_TABLE" > opa_summary.md
+
+            echo "Posting OPA results as a PR comment..."
+#            atlantis comment -- -f opa_summary.md
     apply:
       steps:
         - apply
