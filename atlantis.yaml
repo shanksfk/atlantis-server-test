@@ -46,7 +46,7 @@ workflows:
             # Cleanup
             rm -f opa_output.json
         
-            comment: "Review the proposed infrastructure changes for environment: {{ .EnvName }}. Please comment with any concerns."
+            comment: "Review the proposed infrastructure changes for environment: Please comment with any concerns."
 
     apply:
       steps:
