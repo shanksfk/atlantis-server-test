@@ -5,7 +5,6 @@ projects:
     dir: "infra-local"
     workflow: "custom"
 
-
 workflows:
   custom:
     plan:
@@ -24,16 +23,17 @@ workflows:
             terraform show -json tfplan.binary > tfplan.json
         - run: |
             echo "Running OPA policy checks..."
-        
+            echo "</details>"
+            echo "## OPA Policy Check Results"
+
             # Run OPA and save output
             opa eval --format json --data policy.rego --input tfplan.json "data.terraform.analysis.violations" > opa_output.json
-        
+
             echo "DEBUG: OPA Output Structure:"
             cat opa_output.json | jq .
-        
-            # Prepare OPA result as a comment file
-            echo "### 🚀 OPA Policy Check Results" > opa_comment.txt
-            echo "---" >> opa_comment.txt
+
+            # Print table header
+            echo "### 🚀 OPA Policy Check Results"
 
             # Check if there are any violations
             if jq -e '.result[0].expressions[0].value | length > 0' opa_output.json >/dev/null 2>&1; then
@@ -50,16 +50,12 @@ workflows:
               echo "---" >> opa_comment.txt
               echo "🔴 **Fix the above violations before applying the Terraform plan.**" >> opa_comment.txt
             else
-              echo "### ✅ No OPA Policy Violations Found 🎉" >> opa_comment.txt
-              echo "---" >> opa_comment.txt
+              echo "### ✅ No OPA Policy Violations Found 🎉" 
             fi
-        
+
             # Cleanup
             rm -f opa_output.json
-        - run: |
-            # Post OPA results as a separate PR comment using Atlantis notify
-            atlantis notify --text "$(cat opa_comment.txt)"
-            rm -f opa_comment.txt
+
     apply:
       steps:
         - run: |
