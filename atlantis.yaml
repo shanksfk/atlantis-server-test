@@ -24,14 +24,21 @@ workflows:
             echo "$OPA_RESULT" > opa_results.json
         
             echo "Formatting OPA results into a Markdown table..."
-            OPA_TABLE=$(jq -r '
-              .result[].expressions[].value
-              | to_entries
-              | map("| \(.key + 1) | \(.value.violation_type) | \(.value.description) |")
-              | join("\n")
-            ' opa_results.json)
+            if [[ -s opa_results.json ]]; then
+              OPA_TABLE=$(jq -r '
+                .result[]?.expressions[]?.value
+                | select(. != null)
+                | to_entries
+                | map("| \(.key + 1) | \(.value.violation_type) | \(.value.description) |")
+                | join("\n")
+              ' opa_results.json)
+            else
+              OPA_TABLE="No violations found."
+            fi
         
             echo -e "## OPA Policy Check Results\n\n$OPA_TABLE" > opa_summary.md
+        
+            echo "Posting OPA results as a PR comment..."
 
     apply:
       steps:
