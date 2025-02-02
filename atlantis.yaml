@@ -4,6 +4,9 @@ projects:
   - name: "infra"
     dir: "infra-local"
     workflow: "custom"
+  - env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
 workflows:
   custom:
@@ -24,12 +27,6 @@ workflows:
         - run: |
             echo "Running OPA policy checks..."
             echo "## OPA Policy Check Results"
-
-            # Run OPA and save output
-            opa eval --format json --data policy.rego --input tfplan.json "data.terraform.analysis.violations" > opa_output.json
-
-            echo "DEBUG: OPA Output Structure:"
-            cat opa_output.json | jq .
 
             # Run OPA and save output
             opa eval --format json --data policy.rego --input tfplan.json "data.terraform.analysis.violations" > opa_output.json
@@ -56,10 +53,11 @@ workflows:
             # Print the comment for debugging
             echo "Generated Comment:"
             cat comment.md
+
         - run: |
             echo "Posting comment to GitHub PR..."
-            PR_NUMBER=$(jq -r '.pull.number' <<< "$ATLANTIS_GITHUB_PAYLOAD")
-            REPO_FULL_NAME=$(jq -r '.pull.base.repo.full_name' <<< "$ATLANTIS_GITHUB_PAYLOAD")
+            PR_NUMBER=$(echo "$ATLANTIS_GITHUB_PAYLOAD" | jq -r '.pull.number')
+            REPO_FULL_NAME=$(echo "$ATLANTIS_GITHUB_PAYLOAD" | jq -r '.pull.base.repo.full_name')
 
             # Read the comment content
             COMMENT_CONTENT=$(cat comment.md)
