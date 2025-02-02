@@ -26,7 +26,7 @@ workflows:
             echo "## OPA Policy Check Results"
             
             # Run OPA and save output
-            opa eval --format json --data infra-local/policy.rego --input tfplan.json "data.terraform.analysis.violations" > opa_output.json
+            opa eval --format json --data policy.rego --input tfplan.json "data.terraform.analysis.violations" > opa_output.json
             
             echo "DEBUG: OPA Output Structure:"
             cat opa_output.json
