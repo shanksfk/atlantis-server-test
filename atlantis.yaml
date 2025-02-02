@@ -20,23 +20,27 @@ workflows:
             terraform show -json tfplan.binary > tfplan.json
         - run: |
             echo "Running OPA policy checks..."
-            OPA_RESULT=$(opa eval --format json --data infra-local/policy.rego --input tfplan.json "data.terraform.analysis.violations")
-            echo "$OPA_RESULT" > opa_results.json
+            echo "## OPA Policy Check Results" >> $GITHUB_STEP_SUMMARY
         
-            echo "Formatting OPA results into a Markdown table..."
-            if [ -s opa_results.json ]; then
-              OPA_TABLE=$(jq -r '
-                .result[]?.expressions[]?.value
-                | select(. != null)
-                | to_entries
-                | map("| \(.key + 1) | \(.value.violation_type) | \(.value.description) |")
-                | join("\n")
-              ' opa_results.json)
+            # Run OPA eval and directly process the output
+            OPA_OUTPUT=$(opa eval --format pretty --data infra-local/policy.rego --input tfplan.json "data.terraform.analysis.violations")
+            
+            if [ -n "$OPA_OUTPUT" ]; then
+              echo "| # | Violation Type | Description |" >> $GITHUB_STEP_SUMMARY
+              echo "|---|---------------|-------------|" >> $GITHUB_STEP_SUMMARY
+              
+              # Process and format the output directly
+              echo "$OPA_OUTPUT" | while IFS= read -r line; do
+                if [[ $line =~ "violation_type" ]]; then
+                  VIOLATION_TYPE=$(echo "$line" | sed 's/.*"violation_type": "\([^"]*\)".*/\1/')
+                elif [[ $line =~ "description" ]]; then
+                  DESCRIPTION=$(echo "$line" | sed 's/.*"description": "\([^"]*\)".*/\1/')
+                  echo "| $((++count)) | $VIOLATION_TYPE | $DESCRIPTION |" >> $GITHUB_STEP_SUMMARY
+                fi
+              done
             else
-              OPA_TABLE="No violations found."
+              echo "No violations found." >> $GITHUB_STEP_SUMMARY
             fi
-        
-            echo -e "## OPA Policy Check Results\n\n$OPA_TABLE"
     apply:
       steps:
         - apply
