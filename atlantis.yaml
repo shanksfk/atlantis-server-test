@@ -23,25 +23,32 @@ workflows:
             terraform show -json tfplan.binary > tfplan.json
         - run: |
             echo "Running OPA policy checks..."
-            echo "## OPA Policy Check Results"
-
+            echo "## 🚀 OPA Policy Check Results"
+        
             # Run OPA and save output
-            opa eval --format json --data policy.rego --input tfplan.json "data.terraform.analysis.violations" > opa_output.json
-
+            opa eval --format json --data infra-local/policy.rego --input tfplan.json "data.terraform.analysis.violations" > opa_output.json
+        
             echo "DEBUG: OPA Output Structure:"
-            cat opa_output.json
-
-            # Print table header
-            echo "| # | Violation Description |"
-            echo "|---|------------------------|"
-
-            # Extract violations and format properly
-            count=1
-            jq -r '.result[0].expressions[0].value[] | "| '"$count"' | \(.) |"' opa_output.json || echo "No violations found."
-
+            cat opa_output.json | jq .
+        
+            # Check if there are any violations
+            if jq -e '.result[0].expressions[0].value | length > 0' opa_output.json >/dev/null 2>&1; then
+              echo '```markdown'  # Start a code block for better formatting
+              echo "| 🚨 **Violation #** | 🔍 **Issue Description** |"
+              echo "|------------------|--------------------------|"
+        
+              # Extract and format violations properly
+              jq -r '.result[0].expressions[0].value[]' opa_output.json | awk '{print "| "NR" | "$0" |"}'
+        
+              echo '```'  # End the code block
+            else
+              echo '```markdown'
+              echo "| ✅ No violations found! 🎉 |"
+              echo '```'
+            fi
+        
+            # Cleanup
             rm -f opa_output.json
-    
-
     apply:
       steps:
         - run: |
