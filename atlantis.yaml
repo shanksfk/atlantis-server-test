@@ -15,21 +15,23 @@ workflows:
             echo "Initializing Terraform..."
             terraform init
         - run: |
+            echo "Cleaning up previous plan files..."
+            rm -f tfplan.binary tfplan.json
+        - run: |
             echo "Generating Terraform plan in JSON format..."
             terraform plan -out=tfplan.binary
             terraform show -json tfplan.binary > tfplan.json
         - run: |
             echo "Running OPA policy checks..."
             echo "## OPA Policy Check Results" >> $GITHUB_STEP_SUMMARY
-        
-            # Run OPA eval and directly process the output
+            
             OPA_OUTPUT=$(opa eval --format pretty --data infra-local/policy.rego --input tfplan.json "data.terraform.analysis.violations")
             
             if [ -n "$OPA_OUTPUT" ]; then
               echo "| # | Violation Type | Description |" >> $GITHUB_STEP_SUMMARY
               echo "|---|---------------|-------------|" >> $GITHUB_STEP_SUMMARY
               
-              # Process and format the output directly
+              count=0
               echo "$OPA_OUTPUT" | while IFS= read -r line; do
                 if [[ $line =~ "violation_type" ]]; then
                   VIOLATION_TYPE=$(echo "$line" | sed 's/.*"violation_type": "\([^"]*\)".*/\1/')
@@ -41,20 +43,28 @@ workflows:
             else
               echo "No violations found." >> $GITHUB_STEP_SUMMARY
             fi
-    cek:
-      - steps:
         - run: |
-            echo "Running OPA policy checks..."
+            echo "Cleaning up plan files..."
+            rm -f tfplan.binary tfplan.json
+
+    check:
+      steps:
+        - run: |
+            echo "Running standalone OPA check..."
+            if [ ! -f tfplan.json ]; then
+              echo "Error: tfplan.json not found. Please run plan first."
+              exit 1
+            fi
+            
             echo "## OPA Policy Check Results" >> $GITHUB_STEP_SUMMARY
             
-            # Run OPA eval and directly process the output
             OPA_OUTPUT=$(opa eval --format pretty --data infra-local/policy.rego --input tfplan.json "data.terraform.analysis.violations")
             
             if [ -n "$OPA_OUTPUT" ]; then
               echo "| # | Violation Type | Description |" >> $GITHUB_STEP_SUMMARY
               echo "|---|---------------|-------------|" >> $GITHUB_STEP_SUMMARY
-            
-              # Process and format the output directly
+              
+              count=0
               echo "$OPA_OUTPUT" | while IFS= read -r line; do
                 if [[ $line =~ "violation_type" ]]; then
                   VIOLATION_TYPE=$(echo "$line" | sed 's/.*"violation_type": "\([^"]*\)".*/\1/')
@@ -66,6 +76,10 @@ workflows:
             else
               echo "No violations found." >> $GITHUB_STEP_SUMMARY
             fi
+
     apply:
       steps:
+        - run: |
+            echo "Cleaning up any existing plan files..."
+            rm -f tfplan.binary tfplan.json
         - apply
