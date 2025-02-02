@@ -31,22 +31,45 @@ workflows:
             echo "DEBUG: OPA Output Structure:"
             cat opa_output.json | jq .
 
-            # Print table header
-            echo "| # | Violation Description |"
-            echo "|---|------------------------|"
+            # Run OPA and save output
+            opa eval --format json --data policy.rego --input tfplan.json "data.terraform.analysis.violations" > opa_output.json
 
-            # Check if OPA output contains violations
-            if jq -e '.result[0].expressions[0].value | length > 0' opa_output.json >/dev/null 2>&1; then
-              # Extract violations and format properly
-              jq -r '.result[0].expressions[0].value[] | "\(. | @sh)"' opa_output.json | awk '{print "| "NR" | "$0" |"}'
-            else
-              echo "| ✅ | No violations found! |"
-            fi
-            
-            # Cleanup
-            rm -f opa_output.json
-        
-            comment: "Review the proposed infrastructure changes for environment: Please comment with any concerns."
+            # Parse OPA output and generate Markdown table
+            echo "DEBUG: OPA Output Structure:"
+            cat opa_output.json
+
+            # Generate Markdown table
+            echo "Generating Markdown table..."
+            jq -r '
+              ["Resource", "Violation", "Message"] as $headers |
+              [["---", "---", "---"]] as $separator |
+              .result[].expressions[].value[]? | 
+              [.resource, .violation, .message] as $row |
+              [$headers, $separator, $row] | 
+              .[] | @tsv
+            ' opa_output.json | sed 's/\t/ | /g' > opa_table.md
+
+            # Add Markdown table to a comment file
+            echo -e "### OPA Policy Check Results\n" > comment.md
+            cat opa_table.md >> comment.md
+
+            # Print the comment for debugging
+            echo "Generated Comment:"
+            cat comment.md
+        - run: |
+            echo "Posting comment to GitHub PR..."
+            PR_NUMBER=$(jq -r '.pull.number' <<< "$ATLANTIS_GITHUB_PAYLOAD")
+            REPO_FULL_NAME=$(jq -r '.pull.base.repo.full_name' <<< "$ATLANTIS_GITHUB_PAYLOAD")
+
+            # Read the comment content
+            COMMENT_CONTENT=$(cat comment.md)
+
+            # Post the comment using GitHub API
+            curl -s -X POST \
+              -H "Authorization: token $GITHUB_TOKEN" \
+              -H "Accept: application/vnd.github.v3+json" \
+              -d "$(jq -n --arg body "$COMMENT_CONTENT" '{"body": $body}')" \
+              "https://api.github.com/repos/$REPO_FULL_NAME/issues/$PR_NUMBER/comments"
 
     apply:
       steps:
