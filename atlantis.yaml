@@ -46,9 +46,6 @@ workflows:
         - run: |
             echo "Cleaning up plan files..."
             rm -f tfplan.binary tfplan.json
-
-    check:
-      steps:
         - run: |
             echo "Running standalone OPA check..."
             if [ ! -f tfplan.json ]; then
