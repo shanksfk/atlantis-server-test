@@ -32,20 +32,15 @@ workflows:
               echo "|---|---------------|-------------|"
               
               count=0
-              while IFS= read -r line; do
-                case "$line" in
-                  *"violation_type"*)
-                    VIOLATION_TYPE=$(echo "$line" | sed 's/.*"violation_type": "\([^"]*\)".*/\1/')
-                    ;;
-                  *"description"*)
-                    DESCRIPTION=$(echo "$line" | sed 's/.*"description": "\([^"]*\)".*/\1/')
-                    count=$((count + 1))
-                    echo "| $count | $VIOLATION_TYPE | $DESCRIPTION |"
-                    ;;
-                esac
-              done << EOF
-              $OPA_OUTPUT
-              EOF
+              echo "$OPA_OUTPUT" | while read -r line; do
+                if echo "$line" | grep -q "violation_type"; then
+                  VIOLATION_TYPE=$(echo "$line" | sed 's/.*"violation_type": "\([^"]*\)".*/\1/')
+                elif echo "$line" | grep -q "description"; then
+                  DESCRIPTION=$(echo "$line" | sed 's/.*"description": "\([^"]*\)".*/\1/')
+                  count=$((count + 1))
+                  echo "| $count | $VIOLATION_TYPE | $DESCRIPTION |"
+                fi
+              done
             else
               echo "No violations found."
             fi
