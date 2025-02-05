@@ -51,7 +51,7 @@ workflows:
 #            cat comment.md
         - run: |
             echo "Extracting GitHub Repository Details..."
-            PR_NUMBER= ${{ github.event.number }}
+            PR_NUMBER= github.event.number
             echo "PR Number: $PR_NUMBER"
             
         - run: |
