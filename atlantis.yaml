@@ -33,10 +33,26 @@ workflows:
             echo "DEBUG: OPA Output Structure:"
             cat opa_output.json | jq .
         
-            # Generate Markdown table with extracted violations
-            echo "Generating Markdown table..."
-            echo "|  #  | Violation Message |" > opa_table.md
-            echo "|-----|--------------------|" >> opa_table.md
+            # Check if OPA output is valid
+            if ! jq -e '.result[].expressions[].value' opa_output.json > /dev/null; then
+              echo "❌ No violations found or invalid OPA output."
+              echo "### OPA Policy Check Results" > comment.md
+              echo "✅ No policy violations detected!" >> comment.md
+            else
+              # Generate Markdown table with extracted violations
+              echo "Generating Markdown table..."
+              echo "### OPA Policy Violations Detected!" > comment.md
+              echo "| #   | Violation Message                                                                 |" >> comment.md
+              echo "|-----|-----------------------------------------------------------------------------------|" >> comment.md
+            
+              jq -r '.result[].expressions[].value[] | "| \(input_line_number) | \(.) |"' opa_output.json >> comment.md
+            
+              echo -e "\n**Fix these violations before applying Terraform!**" >> comment.md
+            fi
+        
+            # Print the comment for debugging
+            echo "Generated Comment:"
+            cat comment.md
         
             jq -r '.result[].expressions[].value[]' opa_output.json | awk '{print "| " NR " | " $0 " |"}' >> opa_table.md
         
