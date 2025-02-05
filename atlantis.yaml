@@ -4,8 +4,7 @@ projects:
   - name: "infra"
     dir: "infra-local"
     workflow: "custom"
-  - env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
 
 workflows:
