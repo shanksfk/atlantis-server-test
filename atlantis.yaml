@@ -53,15 +53,6 @@ workflows:
 #            cat comment.md
         - run: |
             echo "Extracting GitHub Repository Details..."
-            REPO_FULL_URL=$(git config --get remote.origin.url)
-            REPO_NAME=$(basename -s .git $(echo $REPO_FULL_URL | sed -E 's|.*github.com[:/](.*)|\1|'))
-            REPO_OWNER=$(echo $REPO_FULL_URL | sed -E 's|.*github.com[:/]([^/]+)/.*|\1|')
-
-            echo "$PULL_REQUEST_NUMBER"
-            $PR_NUMBER = 3
-
-            echo "Repo Owner: $REPO_OWNER"
-            echo "Repo Name: $REPO_NAME"
             echo "PR Number: $PR_NUMBER"
             
         - run: |
