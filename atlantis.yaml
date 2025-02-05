@@ -71,14 +71,16 @@ workflows:
 #
         - run: |
             echo "Posting a Custom Comment to GitHub..."
-            COMMENT_BODY=$(cat comment.md | jq -Rs .)
+            COMMENT_BODY=$(jq -Rs . < comment.md)
 
+            # Ensure valid JSON format
+            PAYLOAD=$(echo "{\"body\": $COMMENT_BODY}" | jq .)
 
             # Post the comment to the PR dynamically
             curl -s -X POST -H "Authorization: token $ATLANTIS_GH_TOKEN" \
               -H "Accept: application/vnd.github.v3+json" \
-            "https://api.github.com/repos/shanksfk/atlantis-server-test/issues/3/comments" \
-              -d "{\"body\": \"$COMMENT_BODY\"}"
+              "https://api.github.com/repos/shanksfk/atlantis-server-test/issues/3/comments" \
+              -d "$PAYLOAD"
 
     apply:
       steps:
