@@ -69,9 +69,7 @@ workflows:
             
         - run: |
             echo "Posting a Custom Comment to GitHub..."
-            COMMENT_BODY='{
-              "body": "### 📊 Custom Table Data\n---\n| Column 1 | Column 2 | Column 3 |\n|----------|----------|----------|\n| Data A | Data B | Data C |\n| Data D | Data E | Data F |\n---\n*This is a hardcoded test comment posted via GitHub API!*"
-            }'
+            COMMENT_BODY="tesrt comment"
 
 
             # Post the comment to the PR dynamically
