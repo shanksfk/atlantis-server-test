@@ -69,19 +69,10 @@ workflows:
             
         - run: |
             echo "Posting a Custom Comment to GitHub..."
-            
-            # Define the comment content
-            COMMENT_BODY=$(cat <<EOF
-            ### 📊 Custom Table Data
-            ---
-            | Column 1 | Column 2 | Column 3 |
-            |----------|----------|----------|
-            | Data A   | Data B   | Data C   |
-            | Data D   | Data E   | Data F   |
-            ---
-            *This is an automated comment generated during Atlantis plan.*
-            EOF
-            )
+            COMMENT_BODY='{
+              "body": "### 📊 Custom Table Data\n---\n| Column 1 | Column 2 | Column 3 |\n|----------|----------|----------|\n| Data A | Data B | Data C |\n| Data D | Data E | Data F |\n---\n*This is a hardcoded test comment posted via GitHub API!*"
+            }'
+
 
             # Post the comment to the PR dynamically
             curl -s -X POST -H "Authorization: token $GITHUB_TOKEN" \
