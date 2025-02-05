@@ -41,9 +41,9 @@ workflows:
             jq -r '.result[].expressions[].value[]' opa_output.json | awk '{print "| " NR " | " $0 " |"}' >> opa_table.md
         
             # Add Markdown table to a comment file
-            echo -e "### OPA Policy Violations Detected!\n" > comment.md
+            echo "### OPA Policy Violations Detected!\n" > comment.md
             cat opa_table.md >> comment.md
-            echo -e "\n **Fix these violations before applying Terraform!**" >> comment.md
+            echo "\n **Fix these violations before applying Terraform!**" >> comment.md
         
             # Print the comment for debugging
             echo "Generated Comment:"
