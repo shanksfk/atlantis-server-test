@@ -89,10 +89,6 @@ workflows:
               "https://api.github.com/repos/shanksfk/atlantis-server-test/issues/3/comments" \
               -d "$PAYLOAD"
 
-    unlock:
-      steps:
-        -run: |
-          -unlock
 
     apply:
       steps:
