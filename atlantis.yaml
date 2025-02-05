@@ -51,7 +51,6 @@ workflows:
 #            cat comment.md
         - run: |
             echo "Extracting GitHub Repository Details..."
-            echo "PR Number: $PR_NUMBER"
             
         - run: |
             echo "Posting a Custom Comment to GitHub..."
