@@ -60,11 +60,12 @@ workflows:
             REPO_OWNER=$(echo $REPO_FULL_URL | sed -E 's|.*github.com[:/]([^/]+)/.*|\1|')
             
             # Get the current Pull Request number dynamically (for GitHub Actions, Atlantis, etc.)
-            PR_NUMBER=$(jq --raw-output .pullRequestNumber $BASE_REPO/.git/refs/pull/*/merge 2>/dev/null || echo "$PULL_REQUEST_NUMBER")
+            echo "$PULL_REQUEST_NUMBER"
+            $PR_NUMBER = 3
             
             echo "Repo Owner: $REPO_OWNER"
             echo "Repo Name: $REPO_NAME"
-            echo "PR Number: $PR_NUMBER"
+            echo "PR Number: $PULL_REQUEST_NUMBER"
             
             - run: |
             echo "Posting a Custom Comment to GitHub..."
