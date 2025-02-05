@@ -50,24 +50,19 @@ workflows:
             cat comment.md
             
 
-#        - run: |
-#            echo "Extracting GitHub Repository Details..."
-#
-#            # Get the full remote URL without printing it
-#            REPO_FULL_URL=$(git config --get remote.origin.url)
-#
-#            # Extract repo owner and name WITHOUT printing token
-#            REPO_NAME=$(basename -s .git $(echo "$REPO_FULL_URL" | sed -E 's|.*github.com[:/](.*)|\1|' | cut -d'/' -f2))
-#            REPO_OWNER=$(echo "$REPO_FULL_URL" | sed -E 's|.*github.com[:/]([^/]+)/.*|\1|')
-#
-#            # Hardcoded PR number for testing
-#            PR_NUMBER=3
-#
-#            # Print extracted values without exposing URL
-#            echo "✅ Repo Owner: $REPO_OWNER"
-#            echo "✅ Repo Name: $REPO_NAME"
-#            echo "✅ PR Number: $PR_NUMBER"
-#
+        - run: |
+            echo "Extracting GitHub Repository Details..."
+        
+            # Use Atlantis environment variables for repo owner, name, and PR number
+            REPO_OWNER="$BASE_REPO_OWNER"
+            REPO_NAME="$BASE_REPO_NAME"
+            PR_NUMBER="$PULL_NUM"
+        
+            # Print extracted values
+            echo "✅ Repo Owner: $REPO_OWNER"
+            echo "✅ Repo Name: $REPO_NAME"
+            echo "✅ PR Number: $PR_NUMBER"
+
         - run: |
             echo "Posting a Custom Comment to GitHub..."
 
