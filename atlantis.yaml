@@ -69,10 +69,14 @@ workflows:
 #
         - run: |
             echo "Posting a Custom Comment to GitHub..."
-            COMMENT_BODY=$(jq -Rs . < comment.md)
 
-            # Ensure valid JSON format
-            PAYLOAD=$(echo "{\"body\": $COMMENT_BODY}" | jq .)
+            # Read comment.md safely and escape special characters
+            COMMENT_BODY=$(jq -Rs . < comment.md | tr -d '\r')
+
+            # Debug: Print the escaped JSON payload before sending
+            PAYLOAD="{\"body\": $COMMENT_BODY}"
+            echo "Generated JSON Payload:"
+            echo "$PAYLOAD" | jq 
 
             # Post the comment to the PR dynamically
             curl -s -X POST -H "Authorization: token $ATLANTIS_GH_TOKEN" \
