@@ -4,8 +4,6 @@ projects:
   - name: "infra"
     dir: "infra-local"
     workflow: "custom"
-    env:
-      PR_NUMBER: ${{ github.event.number }}
 
 
 
