@@ -72,6 +72,10 @@ workflows:
 
             # Read comment.md safely and escape special characters
             COMMENT_BODY=$(jq -Rs . < comment.md | tr -d '\r')
+            echo "📜 Debugging comment.md content..."
+            cat -A comment.md  # Shows hidden characters (e.g., ^M, NULL)
+            echo "-------------------------------------"
+            cat comment.md     # Prints the raw content normally
 
             # Debug: Print the escaped JSON payload before sending
             PAYLOAD="{\"body\": $COMMENT_BODY}"
