@@ -59,9 +59,9 @@ workflows:
             PR_NUMBER="$PULL_NUM"
         
             # Print extracted values
-            echo "✅ Repo Owner: $REPO_OWNER"
-            echo "✅ Repo Name: $REPO_NAME"
-            echo "✅ PR Number: $PR_NUMBER"
+            echo " Repo Owner: $REPO_OWNER"
+            echo "  Repo Name: $REPO_NAME"
+            echo "PR Number: $PR_NUMBER"
 
         - run: |
             echo "Posting a Custom Comment to GitHub..."
