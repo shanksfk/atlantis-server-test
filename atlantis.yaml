@@ -53,8 +53,23 @@ workflows:
             echo "Generated Comment:"
             cat comment.md
         - run: |
+            echo "Extracting GitHub Repository Details..."
+            
+            # Automatically extract repo owner and name from git remote
+            REPO_FULL_URL=$(git config --get remote.origin.url)
+            REPO_NAME=$(basename -s .git $(echo $REPO_FULL_URL | sed -E 's|.*github.com[:/](.*)|\1|'))
+            REPO_OWNER=$(echo $REPO_FULL_URL | sed -E 's|.*github.com[:/]([^/]+)/.*|\1|')
+            
+            # Get the current Pull Request number dynamically (for GitHub Actions, Atlantis, etc.)
+            PR_NUMBER=$(jq --raw-output .pullRequestNumber $BASE_REPO/.git/refs/pull/*/merge 2>/dev/null || echo "$PULL_REQUEST_NUMBER")
+            
+            echo "Repo Owner: $REPO_OWNER"
+            echo "Repo Name: $REPO_NAME"
+            echo "PR Number: $PR_NUMBER"
+            
+            - run: |
             echo "Posting a Custom Comment to GitHub..."
-
+            
             # Define the comment content
             COMMENT_BODY=$(cat <<EOF
             ### 📊 Custom Table Data
@@ -67,11 +82,11 @@ workflows:
             *This is an automated comment generated during Atlantis plan.*
             EOF
             )
-
-            # Post the comment to the PR
+            
+            # Post the comment to the PR dynamically
             curl -s -X POST -H "Authorization: token $GITHUB_TOKEN" \
               -H "Accept: application/vnd.github.v3+json" \
-              "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/issues/$PULL_REQUEST_NUMBER/comments" \
+              "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/issues/$PR_NUMBER/comments" \
               -d "{\"body\": \"$COMMENT_BODY\"}"
 
     apply:
