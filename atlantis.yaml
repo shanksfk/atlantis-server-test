@@ -12,45 +12,45 @@ workflows:
     plan:
       steps:
         - run: echo "Starting custom workflow"
-#        - run: |
-#            echo "Initializing Terraform..."
-#            terraform init
-#        - run: |
-#            echo "Cleaning up previous plan files..."
-#            rm -f tfplan.binary tfplan.json
-#        - run: |
-#            echo "Generating Terraform plan in JSON format..."
-#            terraform plan -out=tfplan.binary
-#            terraform show -json tfplan.binary > tfplan.json
-#        - run: |
-#            echo "Running OPA policy checks..."
-#            echo "## OPA Policy Check Results"
-#
-#            # Run OPA and save output
-#            opa eval --format json --data policy.rego --input tfplan.json "data.terraform.analysis.violations" > opa_output.json
-#
-#            # Parse OPA output and generate Markdown table
-#            echo "DEBUG: OPA Output Structure:"
-#            cat opa_output.json
-#
-#            # Generate Markdown table
-#            echo "Generating Markdown table..."
-#            jq -r '
-#              ["Resource", "Violation", "Message"] as $headers |
-#              [["---", "---", "---"]] as $separator |
-#              .result[].expressions[].value[]? |
-#              [.resource, .violation, .message] as $row |
-#              [$headers, $separator, $row] |
-#              .[] | @tsv
-#            ' opa_output.json | sed 's/\t/ | /g' > opa_table.md
-#
-#            # Add Markdown table to a comment file
-#            echo -e "### OPA Policy Check Results\n" > comment.md
-#            cat opa_table.md >> comment.md
-#
-#            # Print the comment for debugging
-#            echo "Generated Comment:"
-#            cat comment.md
+        - run: |
+            echo "Initializing Terraform..."
+            terraform init
+        - run: |
+            echo "Cleaning up previous plan files..."
+            rm -f tfplan.binary tfplan.json
+        - run: |
+            echo "Generating Terraform plan in JSON format..."
+            terraform plan -out=tfplan.binary
+            terraform show -json tfplan.binary > tfplan.json
+        - run: |
+            echo "Running OPA policy checks..."
+            echo "## OPA Policy Check Results"
+
+            # Run OPA and save output
+            opa eval --format json --data policy.rego --input tfplan.json "data.terraform.analysis.violations" > opa_output.json
+
+            # Parse OPA output and generate Markdown table
+            echo "DEBUG: OPA Output Structure:"
+            cat opa_output.json
+
+            # Generate Markdown table
+            echo "Generating Markdown table..."
+            jq -r '
+              ["Resource", "Violation", "Message"] as $headers |
+              [["---", "---", "---"]] as $separator |
+              .result[].expressions[].value[]? |
+              [.resource, .violation, .message] as $row |
+              [$headers, $separator, $row] |
+              .[] | @tsv
+            ' opa_output.json | sed 's/\t/ | /g' > opa_table.md
+
+            # Add Markdown table to a comment file
+            echo -e "### OPA Policy Check Results\n" > comment.md
+            cat opa_table.md >> comment.md
+
+            # Print the comment for debugging
+            echo "Generated Comment:"
+            cat comment.md
 #        - run: |
 #            echo "Extracting GitHub Repository Details..."
 #
@@ -71,7 +71,7 @@ workflows:
 #
         - run: |
             echo "Posting a Custom Comment to GitHub..."
-            COMMENT_BODY="tesrt comment"
+            COMMENT_BODY=$(cat comment.md | jq -Rs .)
 
 
             # Post the comment to the PR dynamically
