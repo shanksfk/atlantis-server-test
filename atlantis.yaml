@@ -4,8 +4,6 @@ projects:
   - name: "infra"
     dir: "infra-local"
     workflow: "custom"
-    env:
-      PR_NUMBER: ${{ github.event.number }}
 
 workflows:
   custom:
@@ -53,6 +51,7 @@ workflows:
 #            cat comment.md
         - run: |
             echo "Extracting GitHub Repository Details..."
+            PR_NUMBER= ${{ github.event.number }}
             echo "PR Number: $PR_NUMBER"
             
         - run: |
