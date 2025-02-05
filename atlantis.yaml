@@ -48,6 +48,7 @@ workflows:
             # Print the comment for debugging
             echo "Generated Comment:"
             cat comment.md
+            
 
 #        - run: |
 #            echo "Extracting GitHub Repository Details..."
@@ -87,6 +88,12 @@ workflows:
               -H "Accept: application/vnd.github.v3+json" \
               "https://api.github.com/repos/shanksfk/atlantis-server-test/issues/3/comments" \
               -d "$PAYLOAD"
+
+    unlock:
+      steps:
+        -run: |
+          -unlock
+
     apply:
       steps:
         - run: |
