@@ -52,9 +52,7 @@ workflows:
               cat opa_table.md >> comment.md
               echo "\n **Fix these violations before applying Terraform!**" >> comment.md
             fi
-#            # Print the comment for debugging
-#            echo "Generated Comment:"
-#            cat comment.md
+
             
 
         - run: |
