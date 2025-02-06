@@ -11,6 +11,7 @@ workflows:
   custom:
     plan:
       steps:
+        - run: echo "Starting custom workflow"
         - run: |
             echo "Initializing Terraform..."
             terraform init
