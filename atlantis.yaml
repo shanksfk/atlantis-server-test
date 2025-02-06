@@ -38,7 +38,7 @@ workflows:
         
             if [ "$VIOLATION_COUNT" -eq 0 ]; then
               # No violations → Post a success message
-              echo " **0 OPA Violations Detected!**" > comment.md
+              echo " **No Policy Violations Detected!**" > comment.md
             else
               # Violations exist → Generate the Markdown table
               echo "Generating Markdown table..."
@@ -48,7 +48,7 @@ workflows:
               jq -r '.result[].expressions[].value[]' opa_output.json | awk '{print "| " NR " | " $0 " |"}' >> opa_table.md
         
               # Add Markdown table to a comment file
-              echo "### OPA Policy Violations Detected!\n" > comment.md
+              echo "### Policy Violations Detected!\n" > comment.md
               cat opa_table.md >> comment.md
               echo "\n **Fix these violations before applying Terraform!**" >> comment.md
             fi
