@@ -35,7 +35,7 @@ violations_lists[msg] if {
 }
 
 violations_lists[msg] if {
-    resource := input.planned_values.root_module.resources[_]
+    resource := input.configurations.root_module.resources[_]
     required_tags := {"kin-billing-agency", "operations-owner", "product-owner", "technical-contact"}
 
     missing_tags := {tag | some tag in required_tags; not resource.tags[tag]}
