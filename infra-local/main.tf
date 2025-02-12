@@ -110,3 +110,31 @@ resource "aws_db_instance" "my_database" {
   }
   instance_class = ""
 }
+
+
+
+# RDS MySQL Database Configuration (with Encryption)
+resource "aws_db_instance" "my_dabase" {
+  allocated_storage    = 20
+  storage_type        = "gp2"
+  engine              = "mysql"
+  engine_version      = "5.7"
+  db_name             = "appdb"
+  username            = "admin"
+  password            = "password123"
+  multi_az            = false
+  publicly_accessible = false
+
+
+  # Enable encryption at rest
+  storage_encrypted = true
+  kms_key_id        = "arn:aws:kms:us-west-2:123456789012:key/abcd-1234"
+
+  tags = {
+    Name        = "MyDaabase"
+    Environment = "Production"
+    Team        = "DevOps"
+  }
+  instance_class = ""
+}
+

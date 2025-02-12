@@ -22,7 +22,21 @@ workflows:
             echo "Generating Terraform plan in JSON format..."
             terraform plan -out=tfplan.binary
             terraform show -json tfplan.binary > tfplan.json
-            if [ "$VIOLATION_COUNT" -eq 0 ]; then
+        - run: |
+            echo "Running OPA policy checks..."
+            echo "## OPA Policy Check Results"
+        
+            # Run OPA and save output
+            opa eval --format json --data policy.rego --input tfplan.json "data.terraform.analysis.violations" > opa_output.json
+        
+            # Parse OPA output and generate Markdown table
+            echo "DEBUG: OPA Output Structure:"
+            cat opa_output.json | jq .
+        
+            # Check if there are any violations
+            VIOLATION_COUNT=$(jq '[.result[].expressions[].value[]] | length' opa_output.json)
+        
+                        if [ "$VIOLATION_COUNT" -eq 0 ]; then
               # No violations Post a success message
               echo "**No Policy Violations Detected!**" > comment.md
             else
@@ -39,6 +53,8 @@ workflows:
               echo "" >> comment.md  # Add an empty line for proper Markdown spacing
               echo "**Fix these violations before applying Terraform!**" >> comment.md
             fi
+
+
 
             
 
