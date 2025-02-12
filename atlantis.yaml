@@ -36,22 +36,24 @@ workflows:
             # Check if there are any violations
             VIOLATION_COUNT=$(jq '[.result[].expressions[].value[]] | length' opa_output.json)
         
-            if [ "$VIOLATION_COUNT" -eq 0 ]; then
-              # No violations → Post a success message
-              echo " **No Policy Violations Detected!**" > comment.md
+                        if [ "$VIOLATION_COUNT" -eq 0 ]; then
+              # No violations Post a success message
+              echo "**No Policy Violations Detected!**" > comment.md
             else
-              # Violations exist → Generate the Markdown table
+              # Violations exist Generate the Markdown table
               echo "Generating Markdown table..."
-              echo "| #   | Violation Message |" > opa_table.md
-              echo "|-----|--------------------|" >> opa_table.md
-        
-              jq -r '.result[].expressions[].value[]' opa_output.json | awk '{print "| " NR " | " $0 " |"}' >> opa_table.md
-        
-              # Add Markdown table to a comment file
               echo "### Policy Violations Detected!" > comment.md
-              cat opa_table.md >> comment.md
-              echo " **Fix these violations before applying Terraform!**" >> comment.md
+              echo "" >> comment.md  # Add an empty line for proper Markdown spacing
+              echo "| #   | Violation Message |" >> comment.md
+              echo "|-----|--------------------|" >> comment.md
+            
+              jq -r '.result[].expressions[].value[]' opa_output.json | awk '{print "| " NR " | " $0 " |"}' >> comment.md
+            
+              # Add the final line outside the table
+              echo "" >> comment.md  # Add an empty line for proper Markdown spacing
+              echo "**Fix these violations before applying Terraform!**" >> comment.md
             fi
+
 
 
             
