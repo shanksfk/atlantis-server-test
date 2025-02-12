@@ -27,7 +27,7 @@ workflows:
                     echo "## OPA Policy Check Results"
                     
                     # Run OPA and save output
-                    opa eval --format json --data ${DIR%$REPO_REL_DIR}/non-prod/policies --input plan.json "data.terraform.analysis.violations" > opa_output.json
+                    opa eval --format json --data ./infra-local --input plan.json "data.terraform.analysis.violations" > opa_output.json
                     
                     # Parse OPA output and generate Markdown table
                     echo "DEBUG: OPA Output Structure:"
