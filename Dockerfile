@@ -38,4 +38,4 @@ EXPOSE 4141
 
 # Set the entrypoint to run Atlantis
 ENTRYPOINT ["atlantis"]
-CMD ["server", "-p 4141:4141"]
+CMD ["server"]
