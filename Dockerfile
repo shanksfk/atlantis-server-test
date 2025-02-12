@@ -25,7 +25,7 @@ RUN wget https://releases.hashicorp.com/terraform/1.10.5/terraform_1.10.5_linux_
     unzip tf.zip -d /usr/local/bin && \
     rm tf.zip && \
     chmod +x /usr/local/bin/terraform
-
+#Verify
 # Verify installations
 RUN atlantis version && \
     opa version
