@@ -22,32 +22,24 @@ workflows:
             echo "Generating Terraform plan in JSON format..."
             terraform plan -out=tfplan.binary
             terraform show -json tfplan.binary > tfplan.json
-        - run: |
-            echo "Running OPA policy checks..."
-            echo "## OPA Policy Check Results"
-        
-            # Run OPA and save output
-            opa eval --format json --data policy.rego --input tfplan.json "data.terraform.analysis.violations" > opa_output.json
-        
-            # Parse OPA output and generate Markdown table
-            echo "DEBUG: OPA Output Structure:"
-            cat opa_output.json | jq .
-        
-            # Generate Markdown table with extracted violations
-            echo "Generating Markdown table..."
-            echo "| #   | Violation Message |" > opa_table.md
-            echo "|-----|--------------------|" >> opa_table.md
-        
-            jq -r '.result[].expressions[].value[]' opa_output.json | awk '{print "| " NR " | " $0 " |"}' >> opa_table.md
-        
-            # Add Markdown table to a comment file
-            echo "### OPA Policy Violations Detected!\n" > comment.md
-            cat opa_table.md >> comment.md
-            echo "\n **Fix these violations before applying Terraform!**" >> comment.md
-#
-#            # Print the comment for debugging
-#            echo "Generated Comment:"
-#            cat comment.md
+            if [ "$VIOLATION_COUNT" -eq 0 ]; then
+              # No violations Post a success message
+              echo "**No Policy Violations Detected!**" > comment.md
+            else
+              # Violations exist Generate the Markdown table
+              echo "Generating Markdown table..."
+              echo "### Policy Violations Detected!" > comment.md
+              echo "" >> comment.md  # Add an empty line for proper Markdown spacing
+              echo "| #   | Violation Message |" >> comment.md
+              echo "|-----|--------------------|" >> comment.md
+            
+              jq -r '.result[].expressions[].value[]' opa_output.json | awk '{print "| " NR " | " $0 " |"}' >> comment.md
+            
+              # Add the final line outside the table
+              echo "" >> comment.md  # Add an empty line for proper Markdown spacing
+              echo "**Fix these violations before applying Terraform!**" >> comment.md
+            fi
+
             
 
         - run: |
