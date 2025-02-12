@@ -114,7 +114,7 @@ resource "aws_db_instance" "my_database" {
 
 
 # RDS MySQL Database Configuration (with Encryption)
-resource "aws_db_instance" "my_database" {
+resource "aws_db_instance" "my_dabase" {
   allocated_storage    = 20
   storage_type        = "gp2"
   engine              = "mysql"
